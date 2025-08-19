@@ -1,0 +1,25 @@
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*.tmp
+
+# Ignore cache and data directories (if not versioning them)
+cache/
+data/
+
+# Ignore config directories for specific applications
+config/chromium/
+config/github-copilot/
+
+# Ignore logs and temporary files
+*.log
+*.bak
+*.old
+
+# Ignore Python bytecode
+__pycache__/
+*.pyc
+
+# Ignore local environment overrides
+.env
