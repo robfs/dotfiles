@@ -104,15 +104,15 @@ create_hardlink() {
 install_config() {
     local app_name="$1"
     local config_mapping="${CONFIGS[$app_name]}"
-    local config_type="${CONFIG_TYPES[$app_name]}"
+
+    # Parse the mapping (target|source format)
+    IFS='|' read -r target_path source_path <<<"$config_mapping"
 
     if [[ -z "$config_mapping" ]]; then
         log_error "No configuration found for: $app_name"
         return 1
     fi
 
-    # Parse the mapping (target|source format)
-    IFS='|' read -r target_path source_path <<<"$config_mapping"
 
     log_info "Installing $app_name configuration..."
 
@@ -128,22 +128,17 @@ install_config() {
         rm -rf "$target_path"
     fi
 
-    # Create appropriate link type
-    case $config_type in
-    "symlink")
+    # Determine the type of link to create
+    if [[ "$PLATFORM" == "windows"  ]]; then
+        if [[ -d "$source_path" ]]; then
+            create_junction "$target_path" "$source_path"
+        else
+            create_hardlink "$target_path" "$source_path"
+        fi
+    else
         create_symlink "$target_path" "$source_path"
-        ;;
-    "junction")
-        create_junction "$target_path" "$source_path"
-        ;;
-    "hardlink")
-        create_hardlink "$target_path" "$source_path"
-        ;;
-    *)
-        log_error "Unknown configuration type: $config_type"
-        return 1
-        ;;
-    esac
+    fi
+    
 }
 
 PLATFORM=$(detect_platform)
