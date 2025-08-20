@@ -1,146 +1,97 @@
 #!/usr/bin/env bash
 
-set -e # Exit on any error
+set -e
 
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
-CYAN='\033[0;36m'
 BLUE='\033[0;34m'
-NC='\033[0m' # No Color
+NC='\033[0m'
 
-# Create log functions
-log_info() { printf "${GREEN}[INFO]${NC} %s\n" "$1"; }
-log_warn() { printf "${YELLOW}[WARN]${NC} %s\n" "$1"; }
+log_info()  { printf "${GREEN}[INFO]${NC} %s\n" "$1"; }
+log_warn()  { printf "${YELLOW}[WARN]${NC} %s\n" "$1"; }
 log_error() { printf "${RED}[ERROR]${NC} %s\n" "$1"; }
-log_debug() { printf "${BLUE}[DEBUG]${NC} %s\n" "$1"; }
 
-# Detect what platform the machine is on
 detect_platform() {
     case "$OSTYPE" in
-    darwin*) echo "macos" ;;
-    linux*) echo "linux" ;;
-    msys* | cygwin* | mingw*) echo "windows" ;;
-    *) echo "unknown" ;;
+        darwin*) echo "macos" ;;
+        linux*) echo "linux" ;;
+        msys* | cygwin* | mingw*) echo "windows" ;;
+        *) echo "unknown" ;;
     esac
 }
 
-# Get the directory where this script is located
 DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-
-# Configuration storage
-declare -A CONFIGS
-
-# Setup configuration mappings
-setup_config_paths() {
-    local kitty_config="$DOTFILES_DIR/config/kitty"
-    local win_terminal_config="$DOTFILES_DIR/config/windowsterminal/settings.json"
-    local starship_config="$DOTFILES_DIR/config/starship/starship.toml"
-    local nvim_config="$DOTFILES_DIR/config/nvim"
-
-    case $PLATFORM in
-    "linux" | "macos")
-        CONFIGS[terminal]="$HOME/.config/kitty|$kitty_config"
-        CONFIGS[starship]="$HOME/.config/starship.toml|$starship_config"
-        CONFIGS[nvim]="$HOME/.config/nvim|$nvim_config"
-        ;;
-    "windows")
-        CONFIGS[terminal]="$LOCALAPPDATA/Packages/Microsoft.WindowsTerminal_8wekyb3d8bbwe/LocalState/settings.json|$win_terminal_config"
-        CONFIGS[starship]="$APPDATA/starship.toml|$starship_config"
-        CONFIGS[nvim]="$LOCALAPPDATA/nvim|$nvim_config"
-        ;;
-    esac
-}
-
-create_symlink() {
-    local target_path="$1"
-    local source_path="$2"
-    ln -sf "$source_path" "$target_path"
-    log_info "✓ Configuration linked (symlink)"
-}
-
-create_junction() {
-    local target_path="$1"
-    local source_path="$2"
-
-    local win_target=$(cygpath -w "$target_path" 2>/dev/null || echo "$target_path")
-    local win_source=$(cygpath -w "$source_path" 2>/dev/null || echo "$source_path")
-
-    if cmd //c "mklink /J $win_target $win_source" >/dev/null 2>&1; then
-        log_info "✓ Configuration linked (junction)"
-    else
-        log_error "Failed to create junction"
-        return 1
-    fi
-}
-
-create_hardlink() {
-    local target_path="$1"
-    local source_path="$2"
-
-    local win_target=$(cygpath -w "$target_path" 2>/dev/null || echo "$target_path")
-    local win_source=$(cygpath -w "$source_path" 2>/dev/null || echo "$source_path")
-
-    if cmd //c "mklink /H $win_target $win_source" >/dev/null 2>&1; then
-        log_info "✓ Configuration linked (hardlink)"
-    else
-        log_error "Failed to create hardlink"
-        return 1
-    fi
-}
-
-install_config() {
-    local app_name="$1"
-    local config_mapping="${CONFIGS[$app_name]}"
-
-    # Parse the mapping (target|source format)
-    IFS='|' read -r target_path source_path <<<"$config_mapping"
-
-    if [[ -z "$config_mapping" ]]; then
-        log_error "No configuration found for: $app_name"
-        return 1
-    fi
-
-
-    log_info "Installing $app_name configuration..."
-
-    if [[ ! -e "$source_path" ]]; then
-        log_error "Source not found: $source_path"
-        return 1
-    fi
-
-    mkdir -p "$(dirname "$target_path")"
-
-    if [[ -e "$target_path" ]]; then
-        log_warn "Removing existing target: $target_path"
-        rm -rf "$target_path"
-    fi
-
-    # Determine the type of link to create
-    if [[ "$PLATFORM" == "windows"  ]]; then
-        if [[ -d "$source_path" ]]; then
-            create_junction "$target_path" "$source_path"
-        else
-            create_hardlink "$target_path" "$source_path"
-        fi
-    else
-        create_symlink "$target_path" "$source_path"
-    fi
-    
-}
-
 PLATFORM=$(detect_platform)
 
 log_info "Dotfiles installer starting"
 log_info "Platform: $PLATFORM"
 
-# Setup configuration paths
-setup_config_paths
+KITTY_CONFIG="$DOTFILES_DIR/config/kitty"
+STARSHIP_CONFIG="$DOTFILES_DIR/config/starship/starship.toml"
+NVIM_CONFIG="$DOTFILES_DIR/config/nvim"
+WIN_TERMINAL_CONFIG="$DOTFILES_DIR/config/windowsterminal/settings.json"
 
-# Install all configurations
-for app in "${!CONFIGS[@]}"; do
-    install_config "$app"
+# Define configs as: "target|source"
+if [[ "$PLATFORM" == "windows" ]]; then
+    CONFIGS=(
+        "$LOCALAPPDATA/Packages/Microsoft.WindowsTerminal_8wekyb3d8bbwe/LocalState/settings.json|$WIN_TERMINAL_CONFIG"
+        "$APPDATA/starship.toml|$STARSHIP_CONFIG"
+        "$LOCALAPPDATA/nvim|$NVIM_CONFIG"
+    )
+else
+    CONFIGS=(
+        "$HOME/.config/kitty|$KITTY_CONFIG"
+        "$HOME/.config/starship.toml|$STARSHIP_CONFIG"
+        "$HOME/.config/nvim|$NVIM_CONFIG"
+    )
+fi
+
+link_windows_config() {
+    local target="$1"
+    local source="$2"
+
+    local win_target=$(cygpath -w "$target" 2>/dev/null || echo "$target")
+    local win_source=$(cygpath -w "$source" 2>/dev/null || echo "$source")
+
+    if [[ -d "$source" ]]; then
+        cmd //c "mklink /J $win_target $win_source" >/dev/null 2>&1 && \
+            log_info "✓ Linked (junction): $target" || \
+            log_error "Failed to create junction"
+    else
+        cmd //c "mklink /H $win_target $win_source" >/dev/null 2>&1 && \
+            log_info "✓ Linked (hardlink): $target" || \
+            log_error "Failed to create hardlink"
+    fi
+}
+link_config() {
+    local target="$1"
+    local source="$2"
+
+    mkdir -p "$(dirname "$target")"
+    if [[ -e "$target" ]]; then
+        log_warn "Removing existing target: $target"
+        rm -rf "$target"
+    fi
+
+    if [[ "$PLATFORM" == "windows" ]]; then
+        link_windows_config "$target" "$source"
+    else
+        ln -sf "$source" "$target" && \
+        log_info "✓ Linked (symlink): $target" || \
+        log_error "Failed to create symlink"
+    fi
+}
+
+for mapping in "${CONFIGS[@]}"; do
+    IFS='|' read -r target source <<< "$mapping"
+    log_info "Installing config: $target"
+    if [[ ! -e "$source" ]]; then
+        log_error "Source not found: $source"
+        continue
+    fi
+    link_config "$target" "$source"
     echo
 done
 
