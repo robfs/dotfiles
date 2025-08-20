@@ -31,27 +31,22 @@ detect_platform() {
 setup_config_paths() {
     case $PLATFORM in
     "linux" | "macos")
-        CONFIGS[terminal]="$HOME/.config/kitty:$DOTFILES_DIR/config/kitty"
+        CONFIGS[terminal]="$HOME/.config/kitty|$DOTFILES_DIR/config/kitty"
         CONFIG_TYPES[terminal]="symlink"
 
-        CONFIGS[starship]="$HOME/.config/starship.toml:$DOTFILES_DIR/config/starship/starship.toml"
+        CONFIGS[starship]="$HOME/.config/starship.toml|$DOTFILES_DIR/config/starship/starship.toml"
         CONFIG_TYPES[starship]="symlink"
 
-        CONFIGS[nvim]="$HOME/.config/nvim:$DOTFILES_DIR/config/nvim"
+        CONFIGS[nvim]="$HOME/.config/nvim|$DOTFILES_DIR/config/nvim"
         CONFIG_TYPES[nvim]="symlink"
         ;;
     "windows")
-        local appdata=$(cygpath "$APPDATA" 2>/dev/null || echo "$APPDATA")
-        local localappdata=$(cygpath "$LOCALAPPDATA" 2>/dev/null || echo "$LOCALAPPDATA")
-        local userprofile=$(cygpath "$USERPROFILE" 2>/dev/null || echo "$USERPROFILE")
+        CONFIGS[terminal]="$LOCALAPPDATA/Packages/Microsoft.WindowsTerminal_8wekyb3d8bbwe/LocalState/settings.json|$DOTFILES_DIR/config/windowsterminal/settings.json" CONFIG_TYPES[terminal]="hardlink"
 
-        CONFIGS[terminal]="$localappdata/Packages/Microsoft.WindowsTerminal_8wekyb3d8bbwe/LocalState/settings.json:$DOTFILES_DIR/config/windowsterminal/settings.json"
-        CONFIG_TYPES[terminal]="hardlink"
-
-        CONFIGS[starship]="$appdata/starship.toml:$DOTFILES_DIR/config/starship.toml"
+        CONFIGS[starship]="$APPDATA/starship.toml|$DOTFILES_DIR/config/starship/starship.toml"
         CONFIG_TYPES[starship]="hardlink"
 
-        CONFIGS[nvim]="$localappdata/nvim:$DOTFILES_DIR/config/nvim"
+        CONFIGS[nvim]="$LOCALAPPDATA/nvim|$DOTFILES_DIR/config/nvim"
         CONFIG_TYPES[nvim]="junction"
         ;;
     esac
@@ -109,8 +104,8 @@ install_config() {
         return 1
     fi
 
-    # Parse the mapping (target:source format)
-    IFS=':' read -r target_path source_path <<<"$config_mapping"
+    # Parse the mapping (target|source format)
+    IFS='|' read -r target_path source_path <<<"$config_mapping"
 
     log_info "Installing $app_name configuration..."
 
