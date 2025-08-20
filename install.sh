@@ -71,7 +71,7 @@ create_junction() {
     local win_target=$(cygpath -w "$target_path" 2>/dev/null || echo "$target_path")
     local win_source=$(cygpath -w "$source_path" 2>/dev/null || echo "$source_path")
 
-    if cmd //c "mklink /J \"$win_target\" \"$win_source\"" >/dev/null 2>&1; then
+    if cmd //c "mklink /J $win_target $win_source" >/dev/null 2>&1; then
         log_info "✓ Configuration linked (junction)"
     else
         log_error "Failed to create junction"
@@ -86,7 +86,7 @@ create_hardlink() {
     local win_target=$(cygpath -w "$target_path" 2>/dev/null || echo "$target_path")
     local win_source=$(cygpath -w "$source_path" 2>/dev/null || echo "$source_path")
 
-    if cmd //c "mklink /H \"$win_target\" \"$win_source\"" >/dev/null 2>&1; then
+    if cmd //c "mklink /H $win_target $win_source" >/dev/null 2>&1; then
         log_info "✓ Configuration linked (hardlink)"
     else
         log_error "Failed to create hardlink"
