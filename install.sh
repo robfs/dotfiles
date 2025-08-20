@@ -31,8 +31,8 @@ detect_platform() {
 setup_config_paths() {
     case $PLATFORM in
     "linux" | "macos")
-        CONFIGS[kitty]="$HOME/.config/kitty:$DOTFILES_DIR/config/kitty"
-        CONFIG_TYPES[kitty]="symlink"
+        CONFIGS[terminal]="$HOME/.config/kitty:$DOTFILES_DIR/config/kitty"
+        CONFIG_TYPES[terminal]="symlink"
 
         CONFIGS[starship]="$HOME/.config/starship.toml:$DOTFILES_DIR/config/starship/starship.toml"
         CONFIG_TYPES[starship]="symlink"
@@ -45,8 +45,8 @@ setup_config_paths() {
         local localappdata=$(cygpath "$LOCALAPPDATA" 2>/dev/null || echo "$LOCALAPPDATA")
         local userprofile=$(cygpath "$USERPROFILE" 2>/dev/null || echo "$USERPROFILE")
 
-        CONFIGS[kitty]="$appdata/kitty:$DOTFILES_DIR/config/kitty"
-        CONFIG_TYPES[kitty]="junction"
+        CONFIGS[terminal]="$localappdata/Packages/Microsoft.WindowsTerminal_8wekyb3d8bbwe/LocalState/settings.json:$DOTFILES_DIR/config/windowsterminal/settings.json"
+        CONFIG_TYPES[terminal]="hardlink"
 
         CONFIGS[starship]="$appdata/starship.toml:$DOTFILES_DIR/config/starship.toml"
         CONFIG_TYPES[starship]="hardlink"
