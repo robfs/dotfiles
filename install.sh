@@ -29,24 +29,30 @@ detect_platform() {
 
 # Setup configuration mappings
 setup_config_paths() {
+    local kitty_config="$DOTFILES_DIR/config/kitty"
+    local win_terminal_config="$DOTFILES_DIR/config/windowsterminal/settings.json"
+    local starship_config="$DOTFILES_DIR/config/starship/starship.toml"
+    local nvim_config="$DOTFILES_DIR/config/nvim"
+
     case $PLATFORM in
     "linux" | "macos")
-        CONFIGS[terminal]="$HOME/.config/kitty|$DOTFILES_DIR/config/kitty"
+        CONFIGS[terminal]="$HOME/.config/kitty|$kitty_config"
         CONFIG_TYPES[terminal]="symlink"
 
-        CONFIGS[starship]="$HOME/.config/starship.toml|$DOTFILES_DIR/config/starship/starship.toml"
+        CONFIGS[starship]="$HOME/.config/starship.toml|$starship_config"
         CONFIG_TYPES[starship]="symlink"
 
-        CONFIGS[nvim]="$HOME/.config/nvim|$DOTFILES_DIR/config/nvim"
+        CONFIGS[nvim]="$HOME/.config/nvim|$nvim_config"
         CONFIG_TYPES[nvim]="symlink"
         ;;
     "windows")
-        CONFIGS[terminal]="$LOCALAPPDATA/Packages/Microsoft.WindowsTerminal_8wekyb3d8bbwe/LocalState/settings.json|$DOTFILES_DIR/config/windowsterminal/settings.json" CONFIG_TYPES[terminal]="hardlink"
+        CONFIGS[terminal]="$LOCALAPPDATA/Packages/Microsoft.WindowsTerminal_8wekyb3d8bbwe/LocalState/settings.json|$win_terminal_config"
+        CONFIG_TYPES[terminal]="hardlink"
 
-        CONFIGS[starship]="$APPDATA/starship.toml|$DOTFILES_DIR/config/starship/starship.toml"
+        CONFIGS[starship]="$APPDATA/starship.toml|$starship_config"
         CONFIG_TYPES[starship]="hardlink"
 
-        CONFIGS[nvim]="$LOCALAPPDATA/nvim|$DOTFILES_DIR/config/nvim"
+        CONFIGS[nvim]="$LOCALAPPDATA/nvim|$nvim_config"
         CONFIG_TYPES[nvim]="junction"
         ;;
     esac
