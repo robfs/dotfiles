@@ -10,12 +10,11 @@ CYAN='\033[0;36m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-# Get the directory where this script is located
-DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-
-# Configuration storage
-declare -A CONFIGS
-declare -A CONFIG_TYPES
+# Create log functions
+log_info() { printf "${GREEN}[INFO]${NC} %s\n" "$1"; }
+log_warn() { printf "${YELLOW}[WARN]${NC} %s\n" "$1"; }
+log_error() { printf "${RED}[ERROR]${NC} %s\n" "$1"; }
+log_debug() { printf "${BLUE}[DEBUG]${NC} %s\n" "$1"; }
 
 # Detect what platform the machine is on
 detect_platform() {
@@ -26,6 +25,13 @@ detect_platform() {
     *) echo "unknown" ;;
     esac
 }
+
+# Get the directory where this script is located
+DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Configuration storage
+declare -A CONFIGS
+declare -A CONFIG_TYPES
 
 # Setup configuration mappings
 setup_config_paths() {
@@ -57,11 +63,6 @@ setup_config_paths() {
         ;;
     esac
 }
-
-log_info() { printf "${GREEN}[INFO]${NC} %s\n" "$1"; }
-log_warn() { printf "${YELLOW}[WARN]${NC} %s\n" "$1"; }
-log_error() { printf "${RED}[ERROR]${NC} %s\n" "$1"; }
-log_debug() { printf "${BLUE}[DEBUG]${NC} %s\n" "$1"; }
 
 create_symlink() {
     local target_path="$1"
