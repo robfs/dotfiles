@@ -31,7 +31,6 @@ DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Configuration storage
 declare -A CONFIGS
-declare -A CONFIG_TYPES
 
 # Setup configuration mappings
 setup_config_paths() {
@@ -43,23 +42,13 @@ setup_config_paths() {
     case $PLATFORM in
     "linux" | "macos")
         CONFIGS[terminal]="$HOME/.config/kitty|$kitty_config"
-        CONFIG_TYPES[terminal]="symlink"
-
         CONFIGS[starship]="$HOME/.config/starship.toml|$starship_config"
-        CONFIG_TYPES[starship]="symlink"
-
         CONFIGS[nvim]="$HOME/.config/nvim|$nvim_config"
-        CONFIG_TYPES[nvim]="symlink"
         ;;
     "windows")
         CONFIGS[terminal]="$LOCALAPPDATA/Packages/Microsoft.WindowsTerminal_8wekyb3d8bbwe/LocalState/settings.json|$win_terminal_config"
-        CONFIG_TYPES[terminal]="hardlink"
-
         CONFIGS[starship]="$APPDATA/starship.toml|$starship_config"
-        CONFIG_TYPES[starship]="hardlink"
-
         CONFIGS[nvim]="$LOCALAPPDATA/nvim|$nvim_config"
-        CONFIG_TYPES[nvim]="junction"
         ;;
     esac
 }
