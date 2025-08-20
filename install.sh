@@ -9,16 +9,16 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m'
 
-log_info()  { printf "${GREEN}[INFO]${NC} %s\n" "$1"; }
-log_warn()  { printf "${YELLOW}[WARN]${NC} %s\n" "$1"; }
+log_info() { printf "${GREEN}[INFO]${NC} %s\n" "$1"; }
+log_warn() { printf "${YELLOW}[WARN]${NC} %s\n" "$1"; }
 log_error() { printf "${RED}[ERROR]${NC} %s\n" "$1"; }
 
 detect_platform() {
     case "$OSTYPE" in
-        darwin*) echo "macos" ;;
-        linux*) echo "linux" ;;
-        msys* | cygwin* | mingw*) echo "windows" ;;
-        *) echo "unknown" ;;
+    darwin*) echo "macos" ;;
+    linux*) echo "linux" ;;
+    msys* | cygwin* | mingw*) echo "windows" ;;
+    *) echo "unknown" ;;
     esac
 }
 
@@ -56,12 +56,12 @@ link_windows_config() {
     local win_source=$(cygpath -w "$source" 2>/dev/null || echo "$source")
 
     if [[ -d "$source" ]]; then
-        cmd //c "mklink /J $win_target $win_source" >/dev/null 2>&1 && \
-            log_info "✓ Linked (junction): $target" || \
+        cmd //c "mklink /J $win_target $win_source" >/dev/null 2>&1 &&
+            log_info "✓ Linked (junction): $target" ||
             log_error "Failed to create junction"
     else
-        cmd //c "mklink /H $win_target $win_source" >/dev/null 2>&1 && \
-            log_info "✓ Linked (hardlink): $target" || \
+        cmd //c "mklink /H $win_target $win_source" >/dev/null 2>&1 &&
+            log_info "✓ Linked (hardlink): $target" ||
             log_error "Failed to create hardlink"
     fi
 }
@@ -78,14 +78,14 @@ link_config() {
     if [[ "$PLATFORM" == "windows" ]]; then
         link_windows_config "$target" "$source"
     else
-        ln -sf "$source" "$target" && \
-        log_info "✓ Linked (symlink): $target" || \
-        log_error "Failed to create symlink"
+        ln -sf "$source" "$target" &&
+            log_info "✓ Linked (symlink): $target" ||
+            log_error "Failed to create symlink"
     fi
 }
 
 for mapping in "${CONFIGS[@]}"; do
-    IFS='|' read -r target source <<< "$mapping"
+    IFS='|' read -r target source <<<"$mapping"
     log_info "Installing config: $target"
     if [[ ! -e "$source" ]]; then
         log_error "Source not found: $source"
