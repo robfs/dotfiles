@@ -28,11 +28,17 @@ PLATFORM=$(detect_platform)
 log_info "Dotfiles installer starting"
 log_info "Platform: $PLATFORM"
 
+# =========================
+# SECTION: CONFIG PATHS
+# =========================
 KITTY_CONFIG="$DOTFILES_DIR/config/kitty"
 STARSHIP_CONFIG="$DOTFILES_DIR/config/starship/starship.toml"
 NVIM_CONFIG="$DOTFILES_DIR/config/nvim"
 WIN_TERMINAL_CONFIG="$DOTFILES_DIR/config/windowsterminal/settings.json"
 
+# =========================
+# SECTION: CONFIG MAPPINGS
+# =========================
 # Define configs as: "target|source"
 if [[ "$PLATFORM" == "windows" ]]; then
     CONFIGS=(
@@ -48,6 +54,9 @@ else
     )
 fi
 
+# =========================
+# SECTION: LINK FUNCTIONS
+# =========================
 link_windows_config() {
     local target="$1"
     local source="$2"
@@ -84,6 +93,9 @@ link_config() {
     fi
 }
 
+# =========================
+# SECTION: MAIN INSTALL LOOP
+# =========================
 for mapping in "${CONFIGS[@]}"; do
     IFS='|' read -r target source <<<"$mapping"
     log_info "Installing config: $target"
