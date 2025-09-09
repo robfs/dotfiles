@@ -77,7 +77,7 @@ return {
         desc = 'Run all tests with CI',
       },
       {
-        '<leader>nwf',
+        '<leader>nw',
         "<cmd>lua require('neotest').watch.toggle(vim.fn.expand('%'))<cr>",
         desc = 'Toggle neotest watch on current file.',
       },
