@@ -36,6 +36,7 @@ STARSHIP_CONFIG="$DOTFILES_DIR/config/starship/starship.toml"
 NVIM_CONFIG="$DOTFILES_DIR/config/nvim"
 WIN_TERMINAL_CONFIG="$DOTFILES_DIR/config/windowsterminal/settings.json"
 BASH_RC="$DOTFILES_DIR/config/.bashrc"
+ZSH_RC="$DOTFILES_DIR/config/.zshrc"
 
 # =========================
 # SECTION: CONFIG MAPPINGS
@@ -47,6 +48,14 @@ if [[ "$PLATFORM" == "windows" ]]; then
         "$APPDATA/starship.toml|$STARSHIP_CONFIG"
         "$LOCALAPPDATA/nvim|$NVIM_CONFIG"
         "$USERPROFILE/.bashrc|$BASH_RC"
+    )
+elif [[ "$PLATFORM" == "macos" ]]; then
+
+    CONFIGS=(
+        "$HOME/.config/kitty|$KITTY_CONFIG"
+        "$HOME/.config/starship.toml|$STARSHIP_CONFIG"
+        "$HOME/.config/nvim|$NVIM_CONFIG"
+        "$HOME/.zshrc|$ZSH_RC"
     )
 else
     CONFIGS=(
@@ -83,9 +92,9 @@ link_config() {
 
     mkdir -p "$(dirname "$target")"
     if [[ -e "$target" ]]; then
-        if [[ "$target" == *.bashrc ]]; then
+        if [[ "$target" == *.bashrc || "$target" == *.zshrc ]]; then
             mv "$target" "$target.local"
-            log_warn "Existing .bashrc will be sourced from .bashrc.local"
+            log_warn "Existing $target will be sourced from $target.local"
         else
             log_warn "Removing existing target: $target"
             rm -rf "$target"
