@@ -35,6 +35,7 @@ KITTY_CONFIG="$DOTFILES_DIR/config/kitty"
 STARSHIP_CONFIG="$DOTFILES_DIR/config/starship/starship.toml"
 NVIM_CONFIG="$DOTFILES_DIR/config/nvim"
 WIN_TERMINAL_CONFIG="$DOTFILES_DIR/config/windowsterminal/settings.json"
+BASH_RC="$DOTFILES_DIR/config/.bashrc"
 
 # =========================
 # SECTION: CONFIG MAPPINGS
@@ -45,12 +46,14 @@ if [[ "$PLATFORM" == "windows" ]]; then
         "$LOCALAPPDATA/Packages/Microsoft.WindowsTerminal_8wekyb3d8bbwe/LocalState/settings.json|$WIN_TERMINAL_CONFIG"
         "$APPDATA/starship.toml|$STARSHIP_CONFIG"
         "$LOCALAPPDATA/nvim|$NVIM_CONFIG"
+        "$USERPROFILE/.bashrc|$BASH_RC"
     )
 else
     CONFIGS=(
         "$HOME/.config/kitty|$KITTY_CONFIG"
         "$HOME/.config/starship.toml|$STARSHIP_CONFIG"
         "$HOME/.config/nvim|$NVIM_CONFIG"
+        "$HOME/.bashrc|$BASH_RC"
     )
 fi
 
@@ -80,8 +83,13 @@ link_config() {
 
     mkdir -p "$(dirname "$target")"
     if [[ -e "$target" ]]; then
-        log_warn "Removing existing target: $target"
-        rm -rf "$target"
+        if [[ "$target" == *.bashrc ]]; then
+            mv "$target" "$target.local"
+            log_warn "Existing .bashrc will be sourced from .bashrc.local"
+        else
+            log_warn "Removing existing target: $target"
+            rm -rf "$target"
+        fi
     fi
 
     if [[ "$PLATFORM" == "windows" ]]; then
